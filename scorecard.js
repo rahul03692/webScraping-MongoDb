@@ -1,7 +1,12 @@
 const axios = require("axios");
-
+const path=require("path");
+const fs=require("fs");
+const xlsx=require("xlsx");
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
+
+// const readFromExcel = require("./addingToExcel");
+// const writeToExcel = require("./addingToExcel");
 
 module.exports = function getScorecard(url) {
   axios(url)
@@ -49,20 +54,73 @@ function extractScoreCardHTML(html) {
         const sixes = columns[6].textContent.trim();
         const sr = columns[7].textContent.trim();
 
-        console.log(
-          batsmanName +
-            " " +
-            runs +
-            " " +
-            balls +
-            " " +
-            fours +
-            " " +
-            sixes +
-            " " +
-            sr
-        );
+        // console.log(
+        //   batsmanName +
+        //     " " +
+        //     runs +
+        //     " " +
+        //     balls +
+        //     " " +
+        //     fours +
+        //     " " +
+        //     sixes +
+        //     " " +
+        //     sr
+        // );
+
+        processPlayer(batsmanName, runs, balls, fours, sixes, sr, teamName,venue,date,result);
       }
     }
   }
 }
+
+function processPlayer(batsmanName, runs, balls, fours, sixes, sr, teamName,venue,date,result) {
+  
+  const teamPath = path.join(__dirname, "ipl", teamName);
+  const playerPath = path.join(teamPath, batsmanName + ".xlsx");
+
+  const dataFromExcel = readFromExcel(playerPath,batsmanName);
+
+  const playerData={
+    teamName,
+    batsmanName,
+    runs,
+    balls,
+    fours,
+    sixes,
+    sr,
+    venue,
+    date,
+    result,
+  };
+
+  dataFromExcel.push(playerData);
+  writeToExcel(playerPath,dataFromExcel,batsmanName);
+  
+}
+
+function createDir(filePath) {
+  if (fs.existsSync(filePath) == false) {
+    fs.mkdirSync(filePath);
+  }
+}
+
+
+function readFromExcel(filePath, sheetName) {
+  if (fs.existsSync(filePath) == false) return [];
+
+  const file = xlsx.readFile(filePath);
+  const excelData = file.Sheets[sheetName];
+  const ans=xlsx.utils.sheet_to_json(excelData);
+  return ans;
+};
+
+function writeToExcel(filePath, json, sheetName) {
+  const newWB = xlsx.utils.book_new();
+  const newWS = xlsx.utils.json_to_sheet(json);
+
+  xlsx.utils.book_append_sheet(newWB, newWS, sheetName);
+
+  // Writing to our file
+  xlsx.writeFile(newWB, filePath);
+};

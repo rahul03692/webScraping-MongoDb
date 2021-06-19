@@ -1,4 +1,5 @@
-
+const fs=require('fs');
+const path=require("path"); 
 const axios = require("axios");
 
 const jsdom = require("jsdom");
@@ -7,6 +8,9 @@ const { JSDOM } = jsdom;
 const getAllMatches = require('./allMatches');
 
 const url = "https://www.espncricinfo.com/series/ipl-2020-21-1210595";
+
+const filePath=path.join(__dirname,"ipl");
+createDir(filePath);
 
 axios(url)
   .then((response) =>{
@@ -22,4 +26,10 @@ function extractHTML(html){
     const fullLink="https://www.espncricinfo.com"+link;
 
     getAllMatches(fullLink);
+}
+
+function createDir(filePath){
+  if(fs.existsSync(filePath)==false){
+    fs.mkdirSync(filePath);
+  }
 }
