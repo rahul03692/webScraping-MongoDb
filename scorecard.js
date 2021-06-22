@@ -1,7 +1,5 @@
+/*
 const axios = require("axios");
-const path=require("path");
-const fs=require("fs");
-const xlsx=require("xlsx");
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 
@@ -68,20 +66,36 @@ function extractScoreCardHTML(html) {
         //     sr
         // );
 
-        processPlayer(batsmanName, runs, balls, fours, sixes, sr, teamName,venue,date,result);
+        processPlayer(
+          batsmanName,
+          runs,
+          balls,
+          fours,
+          sixes,
+          sr,
+          teamName,
+          venue,
+          date,
+          result
+        );
       }
     }
   }
 }
 
-function processPlayer(batsmanName, runs, balls, fours, sixes, sr, teamName,venue,date,result) {
-  
-  const teamPath = path.join(__dirname, "ipl", teamName);
-  const playerPath = path.join(teamPath, batsmanName + ".xlsx");
-
-  const dataFromExcel = readFromExcel(playerPath,batsmanName);
-
-  const playerData={
+function processPlayer(
+  batsmanName,
+  runs,
+  balls,
+  fours,
+  sixes,
+  sr,
+  teamName,
+  venue,
+  date,
+  result
+) {
+  const playerData = {
     teamName,
     batsmanName,
     runs,
@@ -94,33 +108,13 @@ function processPlayer(batsmanName, runs, balls, fours, sixes, sr, teamName,venu
     result,
   };
 
-  dataFromExcel.push(playerData);
-  writeToExcel(playerPath,dataFromExcel,batsmanName);
-  
+  axios({
+    method: "post",
+    url: "http://localhost:5000/",
+    data: playerData,
+      
+  })
+    .then(() => console.log("data is posted"))
+    .catch((err) => console.log(err.message));
 }
-
-function createDir(filePath) {
-  if (fs.existsSync(filePath) == false) {
-    fs.mkdirSync(filePath);
-  }
-}
-
-
-function readFromExcel(filePath, sheetName) {
-  if (fs.existsSync(filePath) == false) return [];
-
-  const file = xlsx.readFile(filePath);
-  const excelData = file.Sheets[sheetName];
-  const ans=xlsx.utils.sheet_to_json(excelData);
-  return ans;
-};
-
-function writeToExcel(filePath, json, sheetName) {
-  const newWB = xlsx.utils.book_new();
-  const newWS = xlsx.utils.json_to_sheet(json);
-
-  xlsx.utils.book_append_sheet(newWB, newWS, sheetName);
-
-  // Writing to our file
-  xlsx.writeFile(newWB, filePath);
-};
+*/
